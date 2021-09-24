@@ -22,12 +22,14 @@ public class StartUI {
         }
     }
 
+
     private void showMenu(List<UserAction> actions) {
         System.out.println("Menu.");
         for (int i = 0; i < actions.size(); i++) {
             System.out.printf("%d. %s%n", i, actions.get(i).name());
         }
     }
+
 
 
     public static void main(String[] args) {
