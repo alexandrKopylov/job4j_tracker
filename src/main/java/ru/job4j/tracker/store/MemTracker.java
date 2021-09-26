@@ -5,11 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class MemTracker {
+public class MemTracker implements Store{
 
     private final List<Item> items = new ArrayList<>();
 
     private int id = 0;
+
+    @Override
+    public void init() {
+
+    }
 
     public Item add(Item item) {
         item.setId(id++);
@@ -66,4 +71,8 @@ public class MemTracker {
         return index;
     }
 
+    @Override
+    public void close() throws Exception {
+
+    }
 }

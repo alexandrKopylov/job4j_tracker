@@ -4,6 +4,7 @@ import ru.job4j.tracker.model.Item;
 import ru.job4j.tracker.input.Input;
 import ru.job4j.tracker.output.Output;
 import ru.job4j.tracker.store.MemTracker;
+import ru.job4j.tracker.store.Store;
 
 public class FindByIdAction implements UserAction {
 
@@ -19,7 +20,7 @@ public class FindByIdAction implements UserAction {
     }
 
     @Override
-    public boolean execute(Input input, MemTracker tracker) {
+    public boolean execute(Input input, Store tracker) {
         int id = Integer.parseInt(input.askStr("Enter id: "));
         Item item = tracker.findById(id);
         if (item != null) {
