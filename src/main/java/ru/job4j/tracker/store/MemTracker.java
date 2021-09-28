@@ -13,7 +13,6 @@ public class MemTracker implements Store {
 
     @Override
     public void init() {
-
     }
 
     public Item add(Item item) {
@@ -73,6 +72,5 @@ public class MemTracker implements Store {
 
     @Override
     public void close() throws Exception {
-
     }
 }

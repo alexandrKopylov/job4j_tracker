@@ -35,12 +35,6 @@ public class SqlTracker implements Store {
         }
     }
 
-//    @Override
-//    public Item add(Item item) {
-//        return null;
-//
-//    }
-
     @Override
     public Item add(Item item) {
         try (PreparedStatement statement =
@@ -125,12 +119,10 @@ public class SqlTracker implements Store {
             e.printStackTrace();
         }
         return items;
-
     }
 
     @Override
     public Item findById(int id) {
-        //  List<Item> items = new ArrayList<>();
         Item result = null;
         try (PreparedStatement statement = cn.prepareStatement("select * from items where id =  ? ;")) {
             statement.setInt(1, id);
