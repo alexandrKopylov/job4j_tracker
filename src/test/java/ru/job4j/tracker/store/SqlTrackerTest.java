@@ -52,42 +52,33 @@ public class SqlTrackerTest {
     @Test
     public void whenSaveItemAndFindByGeneratedIdThenMustBeTheSame() {
         SqlTracker tracker = new SqlTracker(connection);
-        Item item = new Item("item");
-        tracker.add(item);
+        Item item = tracker.add(new Item("item"));
         assertThat(tracker.findById(item.getId()), is(item));
     }
 
     @Test
     public void whenSaveItemAndThenReplaceAnotherItemIdMustRemainSame() {
         SqlTracker tracker = new SqlTracker(connection);
-        Item first = new Item("First");
-        tracker.add(first);
+        Item first = tracker.add(new Item("First"));
         Item second = new Item("Second");
         tracker.replace(first.getId(), second);
-        String expected = tracker.findById(first.getId()).getName();
-        String actual = second.getName();
-        assertThat(expected, is(actual));
+        assertThat(tracker.findById(first.getId()).getName(), is(second.getName()));
     }
 
     @Test
     public void whenSaveItemAndDeleteThisItem() {
         SqlTracker tracker = new SqlTracker(connection);
-        Item first = new Item("First");
-        tracker.add(first);
+        Item first = tracker.add(new Item("First"));
         tracker.delete(first.getId());
-        Item it = tracker.findById(first.getId());
-        assertNull(it);
+        assertNull(tracker.findById(first.getId()));
     }
 
     @Test
     public void whenAddThreeItemAndGetListOfTheSameItems() {
         SqlTracker tracker = new SqlTracker(connection);
-        Item first = new Item("First");
-        tracker.add(first);
-        Item second = new Item("Second");
-        tracker.add(second);
-        Item third = new Item("Third");
-        tracker.add(third);
+        Item first = tracker.add(new Item("First"));
+        Item second = tracker.add(new Item("Second"));
+        Item third = tracker.add(new Item("Third"));
         List<Item> list = tracker.findAll();
         Iterator<Item> it = list.iterator();
         assertThat(it.next(), is(first));
@@ -98,19 +89,15 @@ public class SqlTrackerTest {
     @Test
     public void whenAddItemAndfindByNameThisItem() {
         SqlTracker tracker = new SqlTracker(connection);
-        Item first = new Item("First");
-        tracker.add(first);
+        Item first = tracker.add(new Item("First"));
         List<Item> list = tracker.findByName("st");
-        Iterator<Item> it = list.iterator();
-        assertThat(it.next(), is(first));
+        assertThat(list.iterator().next(), is(first));
     }
 
     @Test
     public void whenAddItemAndfindByIdThisItem() {
         SqlTracker tracker = new SqlTracker(connection);
-        Item first = new Item("First");
-        tracker.add(first);
-        Item expected = tracker.findById(first.getId());
-        assertThat(expected.getName(), is("First"));
+        Item first = tracker.add(new Item("First"));
+        assertThat(tracker.findById(first.getId()), is(first));
     }
 }
