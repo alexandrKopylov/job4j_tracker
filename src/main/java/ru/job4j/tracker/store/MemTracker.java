@@ -1,6 +1,7 @@
 package ru.job4j.tracker.store;
 
 import ru.job4j.tracker.model.Item;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -72,5 +73,16 @@ public class MemTracker implements Store {
 
     @Override
     public void close() throws Exception {
+    }
+
+    public static void main(String[] args) {
+        MemTracker mem = new MemTracker();
+        long time = System.currentTimeMillis();
+        for (int i = 1; i < 10_000_000; i++) {
+            new Item("item" + i);
+           System.out.println(i);
+        }
+        long time2 = System.currentTimeMillis();
+        System.out.println(time2 - time);
     }
 }
