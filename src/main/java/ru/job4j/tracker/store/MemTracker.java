@@ -5,6 +5,7 @@ import ru.job4j.tracker.model.Item;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 public class MemTracker implements Store {
 
@@ -75,14 +76,14 @@ public class MemTracker implements Store {
     public void close() throws Exception {
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         MemTracker mem = new MemTracker();
-        long time = System.currentTimeMillis();
-        for (int i = 1; i < 10_000_000; i++) {
+        Scanner sc = new Scanner(System.in);
+        String eee = sc.nextLine();
+        Thread.sleep(5000);
+        for (int i = 1; i < 1000; i++) {
             new Item("item" + i);
-           System.out.println(i);
+            System.out.println(i);
         }
-        long time2 = System.currentTimeMillis();
-        System.out.println(time2 - time);
     }
 }

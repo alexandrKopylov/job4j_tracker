@@ -1,0 +1,98 @@
+ Эксперименты с различными GC [#1590 #230813]
+
+                   эксперемент (1)
+    В классе Memtracker  в цикле создаем заявки и
+    и сохраняем   , до вылета exception OutOfMemoryError, смотрим сколько заявок сохранилось
+
+     public static void main(String[] args) {
+            MemTracker mem = new MemTracker();
+            for (int i = 1; i < 100_000_000; i++) {
+               mem.add( new Item("item" + i));
+                System.out.println(i);
+            }
+        }
+
+        - Serial => -XX:+UseSerialGC            26 390 839
+        - Parallel => -XX:+UseParallelGC        21 071 030
+        - CMS => -XX:+UseConcMarkSweepGC        26 870 654
+        - G1 => -XX:+UseG1GC                    27 324 415
+
+        Parallel сохранил меньше всех заявок , видимо у него дольшой оверхед
+
+
+                              эксперемент (2)
+         Теперь в цикле создаем заявки (10_000_000) , но не сохраняем .
+         Засекаем время  работы  каждого GC
+
+                 public static void main(String[] args) {
+                       MemTracker mem = new MemTracker();
+                       long time = System.currentTimeMillis();
+                       for (int i = 1; i < 10_000_000; i++) {
+                           new Item("item" + i);
+                           System.out.println(i);
+                       }
+                       long time2 = System.currentTimeMillis();
+                       System.out.println(time2 - time);
+                   }
+
+           - Serial => -XX:+UseSerialGC                 14533
+
+           - Parallel => -XX:+UseParallelGC             14913
+
+           - CMS => -XX:+UseConcMarkSweepGC             14922
+
+           - G1 => -XX:+UseG1GC                         14808
+
+      а здесь выиграл   Serial  ,   хотя он работает одним потоком
+
+
+
+                      эксперемент (3)
+     Также  в цикле создаем заявки (10_000_000) , но не сохраняем .
+     выводим log  работы  каждого GC
+
+      - Serial => -XX:+UseSerialGC -Xlog:gc*
+[15.517s][info][gc,heap,exit ] Heap
+[15.517s][info][gc,heap,exit ]  def new generation   total 78720K, used 12598K [0x0000000700e00000, 0x0000000706360000, 0x0000000755ea0000)
+[15.517s][info][gc,heap,exit ]   eden space 70016K,  17% used [0x0000000700e00000, 0x0000000701a4db00, 0x0000000705260000)
+[15.517s][info][gc,heap,exit ]   from space 8704K,   0% used [0x0000000705260000, 0x0000000705260000, 0x0000000705ae0000)
+[15.517s][info][gc,heap,exit ]   to   space 8704K,   0% used [0x0000000705ae0000, 0x0000000705ae0000, 0x0000000706360000)
+[15.517s][info][gc,heap,exit ]  tenured generation   total 174784K, used 1705K [0x0000000755ea0000, 0x0000000760950000, 0x0000000800000000)
+[15.517s][info][gc,heap,exit ]    the space 174784K,   0% used [0x0000000755ea0000, 0x000000075604a698, 0x000000075604a800, 0x0000000760950000)
+[15.517s][info][gc,heap,exit ]  Metaspace       used 1355K, capacity 4655K, committed 4864K, reserved 1056768K
+[15.517s][info][gc,heap,exit ]   class space    used 129K, capacity 420K, committed 512K, reserved 1048576K
+
+
+     - Parallel => -XX:+UseParallelGC -Xlog:gc*
+[15.000s][info][gc,heap,exit ] Heap
+[15.000s][info][gc,heap,exit ]  PSYoungGen      total 39424K, used 10111K [0x00000007aaf80000, 0x00000007ae100000, 0x0000000800000000)
+[15.000s][info][gc,heap,exit ]   eden space 38912K, 25% used [0x00000007aaf80000,0x00000007ab95fcd8,0x00000007ad580000)
+[15.000s][info][gc,heap,exit ]   from space 512K, 0% used [0x00000007ae080000,0x00000007ae080000,0x00000007ae100000)
+[15.000s][info][gc,heap,exit ]   to   space 1024K, 0% used [0x00000007adf00000,0x00000007adf00000,0x00000007ae000000)
+[15.000s][info][gc,heap,exit ]  ParOldGen       total 175104K, used 1775K [0x0000000700e00000, 0x000000070b900000, 0x00000007aaf80000)
+[15.000s][info][gc,heap,exit ]   object space 175104K, 1% used [0x0000000700e00000,0x0000000700fbbf18,0x000000070b900000)
+[15.000s][info][gc,heap,exit ]  Metaspace       used 1365K, capacity 4655K, committed 4864K, reserved 1056768K
+[15.000s][info][gc,heap,exit ]   class space    used 129K, capacity 420K, committed 512K, reserved 1048576K
+
+         -XX:+UseConcMarkSweepGC -Xlog:gc*
+[15.190s][info][gc,heap,exit ] Heap
+[15.190s][info][gc,heap,exit ]  par new generation   total 78720K, used 12598K [0x0000000700e00000, 0x0000000706360000, 0x000000072a790000)
+[15.190s][info][gc,heap,exit ]   eden space 70016K,  17% used [0x0000000700e00000, 0x0000000701a4db10, 0x0000000705260000)
+[15.190s][info][gc,heap,exit ]   from space 8704K,   0% used [0x0000000705260000, 0x0000000705260000, 0x0000000705ae0000)
+[15.190s][info][gc,heap,exit ]   to   space 8704K,   0% used [0x0000000705ae0000, 0x0000000705ae0000, 0x0000000706360000)
+[15.190s][info][gc,heap,exit ]  concurrent mark-sweep generation total 174784K, used 1868K [0x000000072a790000, 0x0000000735240000, 0x0000000800000000)
+[15.190s][info][gc,heap,exit ]  Metaspace       used 1364K, capacity 4655K, committed 4864K, reserved 1056768K
+[15.190s][info][gc,heap,exit ]   class space    used 129K, capacity 420K, committed 512K, reserved 1048576K
+
+
+         -XX:+UseG1GC -Xlog:gc*
+[15.364s][info][gc,heap,exit ]  Heap
+[15.364s][info][gc,heap,exit ]  garbage-first heap   total 262144K, used 90949K [0x0000000700e00000, 0x0000000800000000)
+[15.364s][info][gc,heap,exit ]   region size 1024K, 90 young (92160K), 2 survivors (2048K)
+[15.364s][info][gc,heap,exit ]  Metaspace       used 1351K, capacity 4655K, committed 4864K, reserved 1056768K
+[15.364s][info][gc,heap,exit ]   class space    used 129K, capacity 420K, committed 512K, reserved 1048576K
+
+Судя по времени  , parallel  отработал быстрее
+
+
+
